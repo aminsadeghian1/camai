@@ -1,0 +1,29 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  back:
+    build:
+      context: ./back
+      target: development
+    restart: unless-stopped
+    env_file:
+      - .env.backend
+    environment:
+      MONGO_URI: mongodb://mongo:27017/
+    ports:
+      - "1405:1405"
+    volumes:
+      - ./back:/app
+      - back_declarations:/app/declarations
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
+  back_declarations:

@@ -1,0 +1,7 @@
+declarations/
+uploads/
+http/
+scripts/
+AGENTS.md
+*.md
+deno.lock

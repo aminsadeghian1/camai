@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment files
+.env*
+!.env.example
+!.env.backend.example
+!.env.frontend.example
+
+# Next.js output
+.next/
+
+# Deno
+deno.lock
+
+# Backend generated and local data
+back/uploads/*
+!back/uploads/.gitkeep
+back/declarations/*
+!back/declarations/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+.zed/
+*.swp
+*.swo
+.DS_Store
+
+# Scripts (never committed)
+ignore-scripts/*
+!ignore-scripts/.gitkeep
+
+# Docker
+.docker/
