@@ -6,7 +6,7 @@ CAMAI is a photography learning and intelligent shooting platform. It combines a
 
 The implementation contract is the master specification in this repository:
 
-- `CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`
+- `docs/CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`
 
 Read the relevant sections of that specification before implementing any product behavior.
 
@@ -27,7 +27,7 @@ Read the relevant sections of that specification before implementing any product
 camai/
 ├── AGENTS.md
 ├── README.md
-├── CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md
+├── docs/CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md
 ├── .env.backend.example
 ├── docker-compose.dev.yml
 ├── back/                 # Deno + Lesan backend

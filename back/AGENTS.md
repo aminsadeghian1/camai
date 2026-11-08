@@ -5,7 +5,7 @@
 This folder is the CAMAI backend: a Deno application built with Lesan (MongoDB ODM and API framework) and TypeScript in strict mode. It serves the Android app and the future web admin portal through Lesan acts over `POST /lesan`.
 
 The product contract is the master specification at the repository root:
-`../CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`.
+`../docs/CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`.
 
 ## Current Scaffold
 

@@ -2,7 +2,7 @@
 
 CAMAI is a photography learning and intelligent shooting platform: Smart Camera guidance, structured lessons, interactive Photo Labs, real-world practice, AI critique, personal notes and progress tracking.
 
-The product contract is defined in [`CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`](./CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md).
+The product contract is defined in [`docs/CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`](./docs/CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md).
 
 ## Stack
 

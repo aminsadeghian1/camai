@@ -8,7 +8,7 @@
 
 **Tech Stack:** Deno 2, TypeScript strict, Lesan 0.2.3, MongoDB, djwt, bcrypt.
 
-**Spec:** `CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`
+**Spec:** `docs/CAMAI_Complete_Master_Specification_v4_1_Lesan_EN.md`
 
 ## Global Constraints
 
