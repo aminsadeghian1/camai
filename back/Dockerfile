@@ -1,4 +1,4 @@
-FROM denoland/deno:2.1.4 AS development
+FROM denoland/deno:2.9.8 AS development
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ EXPOSE 1405
 
 CMD ["deno", "task", "dev"]
 
-FROM denoland/deno:2.1.4 AS production
+FROM denoland/deno:2.9.8 AS production
 
 WORKDIR /app
 

@@ -12,12 +12,14 @@ services:
       context: ./back
       target: development
     restart: unless-stopped
+    command: deno run --allow-all --watch mod.ts
     env_file:
       - .env.backend
     environment:
       MONGO_URI: mongodb://mongo:27017/
     ports:
       - "1405:1405"
+      - "1406:1406"
     volumes:
       - ./back:/app
       - back_declarations:/app/declarations
