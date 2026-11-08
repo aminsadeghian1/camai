@@ -4,9 +4,18 @@ import { coreApp, job } from "../mod.ts";
 export type JobQueue =
   | "aiReview"
   | "notification"
+  | "notificationDispatch"
   | "analyticsRollup"
   | "cleanup"
   | "accountDeletion";
+
+export type LockedJob = {
+  _id: unknown;
+  queue: string;
+  attempts?: number;
+  maxAttempts?: number;
+  payload: Record<string, unknown>;
+};
 
 export const idempotencyKey = (...parts: string[]) => parts.join(":");
 
@@ -44,7 +53,9 @@ export const enqueueJob = async ({
 
 const jobCollection = () => coreApp.odm.getCollection("job");
 
-export const lockNextJob = async (lockSeconds = 300) => {
+export const lockNextJob = async (
+  lockSeconds = 300,
+): Promise<LockedJob | null> => {
   const now = new Date();
   const lockedUntil = new Date(now.getTime() + lockSeconds * 1000);
   const result = await jobCollection().findOneAndUpdate(
@@ -58,7 +69,7 @@ export const lockNextJob = async (lockSeconds = 300) => {
     },
     { returnDocument: "after" },
   );
-  return result ?? null;
+  return (result ?? null) as LockedJob | null;
 };
 
 export const markJobDone = async (jobId: string) => {

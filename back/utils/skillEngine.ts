@@ -74,7 +74,10 @@ const evidenceWeight = (evidence: SkillEvidence, now: number): number => {
     aiReview: 2,
   }[evidence.type] ?? 1;
 
-  const ageDays = Math.max(0, (now - new Date(evidence.at).getTime()) / 86_400_000);
+  const ageDays = Math.max(
+    0,
+    (now - new Date(evidence.at).getTime()) / 86_400_000,
+  );
   const recency = ageDays <= 30 ? 1.2 : ageDays <= 90 ? 1 : 0.8;
   return base * recency;
 };

@@ -24,7 +24,9 @@ export const resolveResume = ({
     (last, id, index) => completedSet.has(id) ? index : last,
     -1,
   );
-  const firstIncompleteBlock = blockIds.findIndex((id) => !completedSet.has(id));
+  const firstIncompleteBlock = blockIds.findIndex((id) =>
+    !completedSet.has(id)
+  );
   const completed = status === "completed" ||
     (blockIds.length > 0 && firstIncompleteBlock === -1);
   const nextBlock = completed

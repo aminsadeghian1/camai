@@ -30,8 +30,9 @@ export const chooseRecommendation = (
       reasonCode: "RESUME_LESSON",
       activityType: "lesson",
       activityId: input.inProgressLesson.lessonId,
-      explanation:
-        `Continue ${input.inProgressLesson.title} at block ${input.inProgressLesson.currentBlock + 1}.`,
+      explanation: `Continue ${input.inProgressLesson.title} at block ${
+        input.inProgressLesson.currentBlock + 1
+      }.`,
       priority: 100,
     };
   }
@@ -41,7 +42,8 @@ export const chooseRecommendation = (
       reasonCode: "PENDING_PRACTICE",
       activityType: "practice",
       activityId: input.pendingPractice.assignmentId,
-      explanation: `Your practice "${input.pendingPractice.title}" is ready to shoot.`,
+      explanation:
+        `Your practice "${input.pendingPractice.title}" is ready to shoot.`,
       priority: 90,
     };
   }
@@ -72,7 +74,8 @@ export const chooseRecommendation = (
       reasonCode: "NEXT_LESSON",
       activityType: "lesson",
       activityId: input.nextLesson.lessonId,
-      explanation: `Start ${input.nextLesson.title}, the next lesson in your path.`,
+      explanation:
+        `Start ${input.nextLesson.title}, the next lesson in your path.`,
       priority: 60,
     };
   }

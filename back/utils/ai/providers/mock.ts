@@ -90,7 +90,9 @@ export const mockProvider: AiProvider = {
           reason:
             "A controlled comparison makes the effect of the chosen setting easier to see.",
         },
-        confidence: motionRisk === undefined && noise === undefined ? 0.55 : 0.68,
+        confidence: motionRisk === undefined && noise === undefined
+          ? 0.55
+          : 0.68,
         modelVersion: "camai-deterministic-review-v1",
         promptVersion: "camai-photo-review-v1",
       },

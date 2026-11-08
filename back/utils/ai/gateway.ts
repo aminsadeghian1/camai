@@ -64,7 +64,7 @@ export const runAiReview = async (
     }
   }
 
-  throwError(
+  return throwError(
     `AI_UNAVAILABLE: All AI providers failed${
       errors.length ? ` (${errors.join("; ")})` : ""
     }`,

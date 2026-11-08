@@ -7,9 +7,9 @@ import {
   optional,
   type RelationDataType,
   type RelationSortOrderType,
-  string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const lesson_progress_status_array = [
   "notStarted",
@@ -35,6 +35,7 @@ export const lessonProgress_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       lessonProgresses: {
         type: "multiple" as RelationDataType,

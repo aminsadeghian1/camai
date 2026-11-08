@@ -1,4 +1,4 @@
-import { coreApp } from "../mod.ts";
+import { coreApp, db } from "../mod.ts";
 
 const collection = (name: string) => coreApp.odm.getCollection(name);
 
@@ -77,6 +77,21 @@ export const createIndexes = async () => {
   await practiceSubmission.createIndex({ "assignment._id": 1, createdAt: -1 });
   await practiceSubmission.createIndex({ status: 1, createdAt: -1 });
 
+  const reviewAssignment = collection("reviewAssignment");
+  await reviewAssignment.createIndex(
+    { "assignment._id": 1, "reviewer._id": 1 },
+    {
+      unique: true,
+      partialFilterExpression: { status: "active" },
+    },
+  );
+  await reviewAssignment.createIndex({
+    "reviewer._id": 1,
+    status: 1,
+    createdAt: -1,
+  });
+  await reviewAssignment.createIndex({ "assignment._id": 1, status: 1 });
+
   const note = collection("note");
   await note.createIndex(
     { "user._id": 1, operationId: 1 },
@@ -120,6 +135,18 @@ export const createIndexes = async () => {
     { unique: true },
   );
   await userAchievement.createIndex({ "user._id": 1, awardedAt: -1 });
+
+  const syncOperation = db.collection("syncOperation");
+  await syncOperation.createIndex(
+    { userId: 1, operationId: 1 },
+    { unique: true },
+  );
+
+  const analyticsDaily = db.collection("analyticsDaily");
+  await analyticsDaily.createIndex(
+    { date: 1, eventType: 1 },
+    { unique: true },
+  );
 
   const analyticsEvent = collection("analyticsEvent");
   await analyticsEvent.createIndex(

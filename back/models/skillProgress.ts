@@ -12,6 +12,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const mastery_state_array = [
   "unseen",
@@ -43,6 +44,7 @@ export const skillProgress_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       skillProgresses: {
         type: "multiple" as RelationDataType,

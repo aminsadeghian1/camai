@@ -23,9 +23,11 @@ export const assertPublished = (doc: Document | null | undefined): Document => {
 export const assertContentEditable = (
   doc: Document | null | undefined,
 ): Document => {
-  if (!doc) throwError("NOT_FOUND: Content not found");
+  if (!doc) return throwError("NOT_FOUND: Content not found");
   if (doc.status === "Published") {
-    throwError("PUBLISHED_IMMUTABLE: Published content cannot be edited");
+    return throwError(
+      "PUBLISHED_IMMUTABLE: Published content cannot be edited",
+    );
   }
   return doc;
 };
@@ -33,9 +35,9 @@ export const assertContentEditable = (
 export const assertContentRemovable = (
   doc: Document | null | undefined,
 ): Document => {
-  if (!doc) throwError("NOT_FOUND: Content not found");
+  if (!doc) return throwError("NOT_FOUND: Content not found");
   if (doc.status === "Published") {
-    throwError(
+    return throwError(
       "PUBLISHED_IMMUTABLE: Published content cannot be removed; archive it instead",
     );
   }

@@ -14,9 +14,10 @@ export const validateAiOutput = (raw: unknown): AiReviewOutput => {
   }
 
   const value = raw as Record<string, unknown>;
+  const summary = value.summary;
 
-  if (typeof value.summary !== "string" || !value.summary.trim()) {
-    throwError("VALIDATION_FAILED: AI output is missing summary");
+  if (typeof summary !== "string" || !summary.trim()) {
+    return throwError("VALIDATION_FAILED: AI output is missing summary");
   }
 
   const confidence = typeof value.confidence === "number"
@@ -35,7 +36,7 @@ export const validateAiOutput = (raw: unknown): AiReviewOutput => {
   }
 
   return {
-    summary: value.summary,
+    summary,
     strengths: stringArray(value.strengths ?? [], "strengths"),
     issues: stringArray(value.issues ?? [], "issues"),
     evidence: stringArray(value.evidence ?? [], "evidence"),

@@ -2,6 +2,7 @@ import { ObjectId } from "lesan";
 import {
   aiReview,
   coreApp,
+  db,
   file,
   notification,
   practiceAssignment,
@@ -10,15 +11,11 @@ import {
 import { runAiReview } from "../utils/ai/gateway.ts";
 import type { AiReviewInput } from "../utils/ai/types.ts";
 import { applySkillEvidence } from "../utils/skillEngine.ts";
+import { evaluateAchievements } from "../utils/achievements.ts";
 import { clamp, deriveLabMetrics } from "../utils/labScoring.ts";
 import { getStorage } from "../utils/storage/index.ts";
-
-type LockedJob = {
-  _id: unknown;
-  queue: string;
-  attempts?: number;
-  payload: Record<string, unknown>;
-};
+import type { LockedJob } from "../utils/jobs.ts";
+import { writeAudit } from "../utils/audit.ts";
 
 const userCollection = () => coreApp.odm.getCollection("user");
 const sessionCollection = () => coreApp.odm.getCollection("session");
@@ -57,7 +54,7 @@ const createNotification = async ({
   }
 };
 
-const handleAiReview = async (lockedJob: LockedJob) => {
+const processAiReview = async (lockedJob: LockedJob) => {
   const reviewId = String(lockedJob.payload.reviewId ?? "");
   if (!ObjectId.isValid(reviewId)) {
     throw new Error("Invalid aiReview job payload");
@@ -135,8 +132,9 @@ const handleAiReview = async (lockedJob: LockedJob) => {
     throw new Error("Submission media is not ready");
   }
 
-  const exif = (media.metadata as { exif?: Record<string, unknown> } | undefined)
-    ?.exif ?? (submission.exif as Record<string, unknown> | undefined) ?? {};
+  const exif =
+    (media.metadata as { exif?: Record<string, unknown> } | undefined)
+      ?.exif ?? (submission.exif as Record<string, unknown> | undefined) ?? {};
   const controls = {
     aperture: typeof exif.fNumber === "number" ? exif.fNumber : undefined,
     shutterSeconds: typeof exif.exposureTime === "number"
@@ -163,8 +161,8 @@ const handleAiReview = async (lockedJob: LockedJob) => {
       constraints: assignment.constraints,
       requirements: assignment.requirements,
     },
-    lessonObjective:
-      (assignment.lesson as { objective?: string } | undefined)?.objective,
+    lessonObjective: (assignment.lesson as { objective?: string } | undefined)
+      ?.objective,
     learnerLevel: "learner",
     skillState: assignment.skill
       ? {
@@ -191,9 +189,9 @@ const handleAiReview = async (lockedJob: LockedJob) => {
         status: "valid",
         result: execution.result,
         attempts: Number(lockedJob.attempts ?? 1),
-        errorDiagnostics: null,
         updatedAt: new Date(),
       },
+      $unset: { errorDiagnostics: "" },
     },
     projection: { _id: 1, status: 1, result: 1 },
   });
@@ -233,6 +231,8 @@ const handleAiReview = async (lockedJob: LockedJob) => {
     ),
   });
 
+  await evaluateAchievements(ownerId);
+
   await createNotification({
     userId: ownerId,
     type: "aiReviewReady",
@@ -258,7 +258,9 @@ const handleNotification = async (lockedJob: LockedJob) => {
 
 const handleAccountDeletion = async (lockedJob: LockedJob) => {
   const userId = String(lockedJob.payload.userId ?? "");
-  if (!ObjectId.isValid(userId)) throw new Error("Invalid account deletion user");
+  if (!ObjectId.isValid(userId)) {
+    throw new Error("Invalid account deletion user");
+  }
 
   const now = new Date();
   await userCollection().updateOne(
@@ -277,6 +279,13 @@ const handleAccountDeletion = async (lockedJob: LockedJob) => {
     { "owner._id": new ObjectId(userId), deletedAt: { $exists: false } },
     { $set: { deletedAt: now, updatedAt: now } },
   );
+
+  await writeAudit({
+    action: "accountDeletion",
+    targetType: "user",
+    targetId: userId,
+    metadata: { executedAt: now.toISOString() },
+  });
 };
 
 const handleCleanup = async () => {
@@ -311,11 +320,92 @@ const handleCleanup = async () => {
   }
 };
 
-const handleAnalyticsRollup = () => Promise.resolve();
+const handleNotificationDispatch = async () => {
+  const now = new Date();
+  await notificationCollection().updateMany(
+    {
+      scheduledAt: { $lte: now, $exists: true },
+      dispatchedAt: { $exists: false },
+    },
+    { $set: { dispatchedAt: now, updatedAt: now } },
+  );
+};
+
+const handleAnalyticsRollup = async () => {
+  const now = new Date();
+  const start = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - 1,
+  ));
+  const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+  const date = start.toISOString().slice(0, 10);
+  const collection = db.collection("analyticsDaily");
+
+  const groups = await db.collection("analyticsEvent").aggregate([
+    { $match: { createdAt: { $gte: start, $lt: end } } },
+    { $group: { _id: "$eventType", count: { $sum: 1 } } },
+  ]).toArray();
+
+  for (const group of groups) {
+    await collection.updateOne(
+      { date, eventType: String(group._id) },
+      {
+        $set: {
+          date,
+          eventType: String(group._id),
+          count: Number(group.count ?? 0),
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true },
+    );
+  }
+};
+
+const handleAiReview = async (lockedJob: LockedJob) => {
+  const reviewId = String(lockedJob.payload.reviewId ?? "");
+  if (!ObjectId.isValid(reviewId)) {
+    throw new Error("Invalid aiReview job payload");
+  }
+
+  await aiReview.findOneAndUpdate({
+    filter: { _id: new ObjectId(reviewId) },
+    update: {
+      $set: {
+        status: "running",
+        attempts: Number(lockedJob.attempts ?? 1),
+        updatedAt: new Date(),
+      },
+    },
+    projection: { _id: 1 },
+  });
+
+  try {
+    await processAiReview(lockedJob);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await aiReview.findOneAndUpdate({
+      filter: { _id: new ObjectId(reviewId) },
+      update: {
+        $set: {
+          status: "failed",
+          errorDiagnostics: message.slice(0, 2000),
+          attempts: Number(lockedJob.attempts ?? 1),
+          updatedAt: new Date(),
+        },
+      },
+      projection: { _id: 1 },
+    });
+    throw error;
+  }
+};
 
 const handlers: Record<string, (job: LockedJob) => Promise<void>> = {
   aiReview: handleAiReview,
   notification: handleNotification,
+  notificationDispatch: handleNotificationDispatch,
   accountDeletion: handleAccountDeletion,
   cleanup: handleCleanup,
   analyticsRollup: handleAnalyticsRollup,

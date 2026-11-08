@@ -10,6 +10,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const ai_review_status_array = ["queued", "running", "valid", "failed"];
 
@@ -44,6 +45,7 @@ export const aiReview_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       aiReviews: {
         type: "multiple" as RelationDataType,

@@ -54,7 +54,8 @@ export const exposureValue = (
   aperture = DEFAULT_APERTURE,
   shutterSeconds = DEFAULT_SHUTTER,
   iso = DEFAULT_ISO,
-): number => Math.log2((aperture * aperture) / shutterSeconds) -
+): number =>
+  Math.log2((aperture * aperture) / shutterSeconds) -
   Math.log2(iso / 100);
 
 export const motionBlurRisk = (

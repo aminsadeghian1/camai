@@ -17,6 +17,7 @@ export * from "./labEvent.ts";
 export * from "./labResult.ts";
 export * from "./practiceAssignment.ts";
 export * from "./practiceSubmission.ts";
+export * from "./reviewAssignment.ts";
 export * from "./note.ts";
 export * from "./aiReview.ts";
 export * from "./job.ts";

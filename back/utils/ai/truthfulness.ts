@@ -1,6 +1,7 @@
 import type { AiReviewInput, AiReviewOutput } from "./types.ts";
 
-const settingPattern = /\b(?:ISO\s*\d+|f\/\d+(?:\.\d+)?|1\/\d+\s*(?:s|sec)?)\b/gi;
+const settingPattern =
+  /\b(?:ISO\s*\d+|f\/\d+(?:\.\d+)?|1\/\d+\s*(?:s|sec)?)\b/gi;
 const replaceSetting = (text: string): string =>
   text
     .replace(/\bISO\s*\d+\b/gi, "the reported ISO")

@@ -8,8 +8,7 @@ export const currentUser = (): MyContext["user"] => {
   return context.user;
 };
 
-export const currentUserId = (): string =>
-  String(currentUser()?._id ?? "");
+export const currentUserId = (): string => String(currentUser()?._id ?? "");
 
 export const embeddedUserId = (doc: Document | null | undefined): string => {
   const relationUser = doc?.user as { _id?: unknown } | undefined;

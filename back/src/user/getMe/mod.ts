@@ -1,4 +1,4 @@
-import { ALL_ROLES, grantAccess, setTokens, setUser } from "@lib";
+import { ALL_ROLES, grantAccess, setRequestId, setTokens, setUser } from "@lib";
 import { coreApp } from "../../../mod.ts";
 import { getMeFn } from "./getMe.fn.ts";
 import { getMeValidator } from "./getMe.val.ts";
@@ -9,6 +9,7 @@ export const getMeSetup = () =>
     fn: getMeFn,
     actName: "getMe",
     preAct: [
+      setRequestId,
       setTokens,
       setUser,
       grantAccess([{ roles: ALL_ROLES }]),

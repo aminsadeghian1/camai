@@ -76,6 +76,7 @@ export const user_pure = {
   ),
   passwordResetTokenHash: optional(string()),
   passwordResetExpiresAt: optional(date()),
+  deletionRequestedAt: optional(date()),
   lastLoginAt: optional(date()),
   ...createUpdateAt,
 };

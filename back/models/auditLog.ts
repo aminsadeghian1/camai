@@ -7,6 +7,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const auditLog_pure = {
   action: string(),
@@ -21,6 +22,7 @@ export const auditLog_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: true,
+    excludes: user_excludes,
     relatedRelations: {},
   },
 };

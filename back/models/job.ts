@@ -13,6 +13,7 @@ import { createUpdateAt } from "./utils/createUpdateAt.ts";
 export const job_queue_array = [
   "aiReview",
   "notification",
+  "notificationDispatch",
   "analyticsRollup",
   "cleanup",
   "accountDeletion",

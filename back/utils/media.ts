@@ -45,7 +45,9 @@ const detectJpeg = (bytes: Uint8Array): DetectedMedia => {
     const segmentStart = offset + 4;
 
     if (marker === 0xe1 && ascii(bytes, segmentStart, 4) === "Exif") {
-      const parsed = parseExif(bytes.slice(segmentStart + 6, offset + 2 + length));
+      const parsed = parseExif(
+        bytes.slice(segmentStart + 6, offset + 2 + length),
+      );
       width = parsed.width ?? width;
       height = parsed.height ?? height;
       capturedAt = parsed.capturedAt ?? capturedAt;
@@ -176,7 +178,7 @@ export const detectMedia = (bytes: Uint8Array): DetectedMedia => {
     return { mimeType: "video/mp4", type: "video", extension: "mp4" };
   }
 
-  throwError("MEDIA_UPLOAD_FAILED: Unsupported media format");
+  return throwError("MEDIA_UPLOAD_FAILED: Unsupported media format");
 };
 
 export const verifyDeclaredMime = (
@@ -193,6 +195,21 @@ export const validateMediaSize = (size: number): void => {
   if (size > MAX_MEDIA_BYTES) {
     throwError("MEDIA_UPLOAD_FAILED: File exceeds the 25 MB limit");
   }
+};
+
+export const mediaKindForMime = (mimeType: string): MediaKind => {
+  if (mimeType.startsWith("image/")) return "image";
+  if (mimeType.startsWith("video/")) return "video";
+  if (
+    mimeType === "application/pdf" ||
+    mimeType.startsWith("text/") ||
+    mimeType.includes("document") ||
+    mimeType.includes("word") ||
+    mimeType.includes("sheet")
+  ) {
+    return "docs";
+  }
+  return "other";
 };
 
 export const safeMetadata = (detected: DetectedMedia) => ({

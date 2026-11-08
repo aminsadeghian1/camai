@@ -1,5 +1,5 @@
 import { type ActFn, ObjectId } from "lesan";
-import { session, user } from "../../../mod.ts";
+import { coreApp, session, user } from "../../../mod.ts";
 import { throwError, verifyRefreshSecret } from "@lib";
 import { issueSession, parseRefreshToken } from "../shared.ts";
 
@@ -26,7 +26,21 @@ export const refreshFn: ActFn = async (body) => {
   }
 
   if (existingSession.revokedAt) {
-    return throwError("UNAUTHORIZED: Refresh token has been revoked");
+    const revokedOwner = existingSession.user as { _id?: unknown } | undefined;
+
+    if (revokedOwner?._id) {
+      await coreApp.odm.getCollection("session").updateMany(
+        {
+          "user._id": new ObjectId(String(revokedOwner._id)),
+          revokedAt: { $exists: false },
+        },
+        { $set: { revokedAt: new Date(), updatedAt: new Date() } },
+      );
+    }
+
+    return throwError(
+      "UNAUTHORIZED: Refresh token reuse detected; all sessions revoked",
+    );
   }
 
   const expiresAt = existingSession.expiresAt instanceof Date

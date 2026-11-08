@@ -37,4 +37,8 @@ export const labChallenge_relations = {
 };
 
 export const labChallenges = () =>
-  coreApp.odm.newModel("labChallenge", labChallenge_pure, labChallenge_relations);
+  coreApp.odm.newModel(
+    "labChallenge",
+    labChallenge_pure,
+    labChallenge_relations,
+  );

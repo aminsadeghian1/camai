@@ -36,6 +36,22 @@ export const createAccessToken = (user: Document) =>
 export const createRefreshSecret = () =>
   `${crypto.randomUUID()}${crypto.randomUUID()}`.replace(/-/g, "");
 
+export const createPasswordResetToken = (userId: unknown): string =>
+  `${String(userId)}.${createRefreshSecret()}`;
+
+export const parsePasswordResetToken = (
+  token: string,
+): { userId: string; secret: string } => {
+  const separator = token.indexOf(".");
+  if (separator <= 0 || separator === token.length - 1) {
+    return { userId: "", secret: "" };
+  }
+  return {
+    userId: token.slice(0, separator),
+    secret: token.slice(separator + 1),
+  };
+};
+
 export const hashRefreshSecret = (secret: string) => hash(secret);
 
 export const verifyRefreshSecret = (secret: string, hashed: string) =>

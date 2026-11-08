@@ -8,6 +8,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const recommendation_activity_array = [
   "lesson",
@@ -46,6 +47,7 @@ export const recommendation_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       recommendations: {
         type: "multiple" as RelationDataType,

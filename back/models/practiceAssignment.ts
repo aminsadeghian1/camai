@@ -10,6 +10,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const practice_status_array = [
   "assigned",
@@ -37,6 +38,7 @@ export const practiceAssignment_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       practiceAssignments: {
         type: "multiple" as RelationDataType,

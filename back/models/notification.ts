@@ -1,7 +1,6 @@
 import { coreApp } from "../mod.ts";
 import {
   date,
-  defaulted,
   enums,
   optional,
   type RelationDataType,
@@ -9,6 +8,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const notification_type_array = [
   "continueLearning",
@@ -28,6 +28,7 @@ export const notification_pure = {
   body: string(),
   readAt: optional(date()),
   scheduledAt: optional(date()),
+  dispatchedAt: optional(date()),
   dedupeKey: optional(string()),
   ...createUpdateAt,
 };
@@ -37,6 +38,7 @@ export const notification_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       notifications: {
         type: "multiple" as RelationDataType,

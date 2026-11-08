@@ -6,6 +6,7 @@ import {
   type RelationSortOrderType,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const userAchievement_pure = {
   awardedAt: defaulted(date(), () => new Date()),
@@ -17,6 +18,7 @@ export const userAchievement_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       userAchievements: {
         type: "multiple" as RelationDataType,

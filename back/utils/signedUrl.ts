@@ -25,7 +25,11 @@ const fromBase64Url = (value: string): Uint8Array => {
 };
 
 const sign = async (payload: string): Promise<string> => {
-  const signature = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
+  const signature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(payload),
+  );
   return base64Url(new Uint8Array(signature));
 };
 

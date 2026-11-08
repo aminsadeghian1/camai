@@ -1,9 +1,5 @@
 import { coreApp } from "../mod.ts";
-import {
-  object,
-  type RelationDataType,
-  string,
-} from "lesan";
+import { object, type RelationDataType, string } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
 
 export const labEvent_pure = {

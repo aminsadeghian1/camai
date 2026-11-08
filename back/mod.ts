@@ -12,8 +12,8 @@ import {
   labChallenges,
   labEvents,
   labResults,
-  labScenes,
   labs,
+  labScenes,
   learningPaths,
   lessonProgresses,
   lessons,
@@ -23,6 +23,7 @@ import {
   practiceAssignments,
   practiceSubmissions,
   recommendations,
+  reviewAssignments,
   sessions,
   skillProgresses,
   skills,
@@ -31,6 +32,8 @@ import {
 } from "@model";
 import { functionsSetup } from "./src/mod.ts";
 import { startJobWorker } from "./jobs/worker.ts";
+import { startSchedules } from "./jobs/schedules.ts";
+import { startMediaServer } from "./http/mediaServer.ts";
 
 const MONGO_URI = Deno.env.get("MONGO_URI") || "mongodb://127.0.0.1:27017/";
 const MONGO_DB = Deno.env.get("MONGO_DB") || "camai";
@@ -39,7 +42,7 @@ const ENV = Deno.env.get("ENV") || "development";
 
 export const coreApp = lesan();
 const client = await new MongoClient(MONGO_URI).connect();
-const db = client.db(MONGO_DB);
+export const db = client.db(MONGO_DB);
 coreApp.odm.setDb(db);
 
 export const user = users();
@@ -60,6 +63,7 @@ export const labEvent = labEvents();
 export const labResult = labResults();
 export const practiceAssignment = practiceAssignments();
 export const practiceSubmission = practiceSubmissions();
+export const reviewAssignment = reviewAssignments();
 export const note = notes();
 export const aiReview = aiReviews();
 export const job = jobs();
@@ -79,6 +83,11 @@ functionsSetup();
 await createIndexes();
 
 startJobWorker();
+startSchedules();
+
+if ((Deno.env.get("STORAGE_DRIVER") || "local").toLowerCase() === "local") {
+  startMediaServer();
+}
 
 const corsOrigins = (Deno.env.get("CORS_ORIGINS") || "http://localhost:3000")
   .split(",")

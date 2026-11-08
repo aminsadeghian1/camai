@@ -10,6 +10,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const labAttempt_pure = {
   labVersion: defaulted(number(), 1),
@@ -29,6 +30,7 @@ export const labAttempt_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       labAttempts: {
         type: "multiple" as RelationDataType,

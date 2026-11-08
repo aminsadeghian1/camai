@@ -15,6 +15,7 @@ export type RoleCheck = {
 };
 
 type AuthUser = {
+  _id?: unknown;
   isGhost?: boolean;
   roles?: ActiveRole[];
 };

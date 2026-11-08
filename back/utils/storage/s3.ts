@@ -38,11 +38,12 @@ const assertConfigured = () => {
 const sign = async (
   file: Document,
   method: string,
+  ttlSeconds: number,
   headers: Record<string, string> = {},
 ) => {
   assertConfigured();
   const url = new URL(objectUrl(file));
-  url.searchParams.set("X-Amz-Expires", "900");
+  url.searchParams.set("X-Amz-Expires", String(Math.max(1, ttlSeconds)));
   const signed = await client.sign(url.toString(), {
     method,
     headers,
@@ -55,7 +56,7 @@ export const s3Adapter: StorageAdapter = {
   driver: "s3",
 
   async requestUpload(file, ttlSeconds) {
-    const url = await sign(file, "PUT", {
+    const url = await sign(file, "PUT", ttlSeconds, {
       "content-type": String(file.mimeType ?? "application/octet-stream"),
     });
     return {
@@ -69,27 +70,27 @@ export const s3Adapter: StorageAdapter = {
   },
 
   async requestDownload(file, ttlSeconds) {
-    return { url: await sign(file, "GET"), expiresIn: ttlSeconds };
+    return { url: await sign(file, "GET", ttlSeconds), expiresIn: ttlSeconds };
   },
 
   async put(file, data, contentType) {
-    const url = await sign(file, "PUT", { "content-type": contentType });
+    const url = await sign(file, "PUT", 900, { "content-type": contentType });
     const response = await fetch(url, {
       method: "PUT",
       headers: { "content-type": contentType },
-      body: data,
+      body: data as BodyInit,
     });
     if (!response.ok) throw new Error(`S3 upload failed: ${response.status}`);
   },
 
   async get(file) {
-    const response = await fetch(await sign(file, "GET"));
+    const response = await fetch(await sign(file, "GET", 900));
     if (!response.ok) throw new Error(`S3 read failed: ${response.status}`);
     return new Uint8Array(await response.arrayBuffer());
   },
 
   async head(file) {
-    const response = await fetch(await sign(file, "HEAD"));
+    const response = await fetch(await sign(file, "HEAD", 900));
     if (!response.ok) throw new Error(`S3 head failed: ${response.status}`);
     return {
       size: Number(response.headers.get("content-length") || 0),
@@ -98,7 +99,7 @@ export const s3Adapter: StorageAdapter = {
   },
 
   async remove(file) {
-    const response = await fetch(await sign(file, "DELETE"));
+    const response = await fetch(await sign(file, "DELETE", 900));
     if (!response.ok && response.status !== 404) {
       throw new Error(`S3 delete failed: ${response.status}`);
     }

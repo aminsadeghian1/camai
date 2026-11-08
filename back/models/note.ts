@@ -10,6 +10,7 @@ import {
   string,
 } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
+import { user_excludes } from "./excludes.ts";
 
 export const note_target_type_array = [
   "lesson",
@@ -36,6 +37,7 @@ export const note_relations = {
     schemaName: "user",
     type: "single" as RelationDataType,
     optional: false,
+    excludes: user_excludes,
     relatedRelations: {
       notes: {
         type: "multiple" as RelationDataType,
@@ -46,4 +48,5 @@ export const note_relations = {
   },
 };
 
-export const notes = () => coreApp.odm.newModel("note", note_pure, note_relations);
+export const notes = () =>
+  coreApp.odm.newModel("note", note_pure, note_relations);

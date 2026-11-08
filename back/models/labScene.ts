@@ -1,11 +1,5 @@
 import { coreApp } from "../mod.ts";
-import {
-  number,
-  object,
-  optional,
-  type RelationDataType,
-  string,
-} from "lesan";
+import { number, object, optional, type RelationDataType, string } from "lesan";
 import { createUpdateAt } from "./utils/createUpdateAt.ts";
 
 export const labScene_pure = {

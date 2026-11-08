@@ -3,8 +3,8 @@ import {
   array,
   boolean,
   enums,
-  ObjectId,
   object,
+  ObjectId,
   objectIdValidation,
   optional,
   string,
@@ -37,9 +37,15 @@ export type CrudRelation = {
 export type CrudConfig = {
   schema: string;
   model: {
-    insertOne: (args: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
-    findOne: (args: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
-    findOneAndUpdate: (args: Record<string, unknown>) => Promise<Record<string, unknown> | null>;
+    insertOne: (
+      args: Record<string, unknown>,
+    ) => Promise<Record<string, unknown> | null>;
+    findOne: (
+      args: Record<string, unknown>,
+    ) => Promise<Record<string, unknown> | null>;
+    findOneAndUpdate: (
+      args: Record<string, unknown>,
+    ) => Promise<Record<string, unknown> | null>;
     addRelation: (args: Record<string, unknown>) => Promise<unknown>;
     deleteOne: (args: Record<string, unknown>) => Promise<unknown>;
     countDocument: (args: Record<string, unknown>) => Promise<number>;
@@ -72,7 +78,10 @@ const withoutTimestamps = (pure: Record<string, unknown>) => {
 
 const optionalize = (pure: Record<string, unknown>) =>
   Object.fromEntries(
-    Object.entries(pure).map(([key, validator]) => [key, optional(validator)]),
+    Object.entries(pure).map(([key, validator]) => [
+      key,
+      optional(validator as Parameters<typeof optional>[0]),
+    ]),
   );
 
 const escapeRegex = (value: string) =>
@@ -101,7 +110,10 @@ const relationSetValidators = (relations: CrudRelation[] = []) =>
       const validator = relation.multiple
         ? array(objectIdValidation)
         : objectIdValidation;
-      return [relation.field, relation.optional === false ? validator : optional(validator)];
+      return [
+        relation.field,
+        relation.optional === false ? validator : optional(validator),
+      ];
     }),
   );
 
@@ -123,7 +135,9 @@ const buildRelations = (
     }
 
     const ids = relation.multiple
-      ? (Array.isArray(value) ? value : [value]).map((id) => new ObjectId(String(id)))
+      ? (Array.isArray(value) ? value : [value]).map((id) =>
+        new ObjectId(String(id))
+      )
       : new ObjectId(String(value));
 
     built[relation.name] = {
@@ -179,7 +193,7 @@ const registerGet = (config: CrudConfig) => {
       projection: { _id: 1, status: 1 },
     });
 
-    if (!existing) throwError("NOT_FOUND: Record not found");
+    if (!existing) return throwError("NOT_FOUND: Record not found");
 
     if (config.publishedOnlyForLearners) {
       const access = await currentContentAccess();
@@ -231,7 +245,9 @@ const registerGets = (config: CrudConfig) => {
       $sort: { [sortField]: set.sortOrder === "asc" ? 1 : -1 },
     });
     pipeline.push({ $skip: pageSkip(set) });
-    pipeline.push({ $limit: Math.min(Math.max(Number(set.limit ?? 50), 1), 200) });
+    pipeline.push({
+      $limit: Math.min(Math.max(Number(set.limit ?? 50), 1), 200),
+    });
 
     return await config.model.aggregation({ pipeline, projection: get })
       .toArray();
@@ -283,7 +299,9 @@ const registerAdd = (config: CrudConfig) => {
       ...(Object.keys(relations).length ? { relations } : {}),
     });
 
-    if (!created) throwError("VALIDATION_FAILED: Record could not be created");
+    if (!created) {
+      return throwError("VALIDATION_FAILED: Record could not be created");
+    }
 
     await audit(config, "create", String(created._id));
     return created;
@@ -321,7 +339,7 @@ const registerUpdate = (config: CrudConfig) => {
       projection: { _id: 1, status: 1 },
     });
 
-    if (!existing) throwError("NOT_FOUND: Record not found");
+    if (!existing) return throwError("NOT_FOUND: Record not found");
     if (config.immutableWhenPublished) assertContentEditable(existing);
 
     if (
@@ -382,7 +400,7 @@ const registerUpdateRelations = (config: CrudConfig) => {
       projection: { _id: 1, status: 1 },
     });
 
-    if (!existing) throwError("NOT_FOUND: Record not found");
+    if (!existing) return throwError("NOT_FOUND: Record not found");
     if (config.immutableWhenPublished) assertContentEditable(existing);
 
     for (const relation of config.relations ?? []) {
@@ -456,7 +474,7 @@ const registerRemove = (config: CrudConfig) => {
       projection: { _id: 1, status: 1 },
     });
 
-    if (!existing) throwError("NOT_FOUND: Record not found");
+    if (!existing) return throwError("NOT_FOUND: Record not found");
     if (config.immutableWhenPublished) assertContentRemovable(existing);
 
     await config.model.deleteOne({
@@ -528,7 +546,7 @@ const registerPublish = (config: CrudConfig) => {
       projection: { _id: 1, status: 1 },
     });
 
-    if (!existing) throwError("NOT_FOUND: Content not found");
+    if (!existing) return throwError("NOT_FOUND: Content not found");
     if (existing.status === "Published") {
       return await config.model.findOne({
         filters: { _id },
@@ -562,7 +580,116 @@ const registerPublish = (config: CrudConfig) => {
       setTokens,
       setUser,
       grantAccess(
-        roleChecks(config.publishRoles ?? ["Manager", "Admin", "ContentEditor"]),
+        roleChecks(
+          config.publishRoles ?? ["Manager", "Admin", "ContentEditor"],
+        ),
+      ),
+    ],
+    validator: object({
+      set: object({
+        ...activeRoleMixin,
+        _id: objectIdValidation,
+      }),
+      get: selectStruct(config.schema, 2),
+    }),
+  });
+};
+
+const registerNewVersion = (config: CrudConfig) => {
+  if (!config.immutableWhenPublished) return;
+
+  const newVersionFn: ActFn = async (body) => {
+    const { set, get } = body.details;
+    const _id = new ObjectId(String(set._id));
+
+    const clonedFields = Object.keys(withoutTimestamps(config.pure)).filter(
+      (key) => !["status", "version", "publishedAt"].includes(key),
+    );
+    const projection: Record<string, unknown> = Object.fromEntries(
+      clonedFields.map((key) => [key, 1]),
+    );
+    projection.status = 1;
+    projection.version = 1;
+    for (const relation of config.relations ?? []) {
+      projection[relation.name] = { _id: 1 };
+    }
+
+    const existing = await config.model.findOne({
+      filters: { _id },
+      projection,
+    });
+
+    if (!existing) return throwError("NOT_FOUND: Content not found");
+    if (existing.status !== "Published") {
+      return throwError(
+        "VALIDATION_FAILED: Only published content can be versioned",
+      );
+    }
+
+    const doc: Record<string, unknown> = {};
+    for (const key of clonedFields) {
+      if (existing[key] !== undefined) doc[key] = existing[key];
+    }
+    doc.version = Number(existing.version ?? 1) + 1;
+    doc.status = "Draft";
+    doc.createdAt = new Date();
+    doc.updatedAt = new Date();
+
+    const relations: Record<string, unknown> = {};
+    for (const relation of config.relations ?? []) {
+      const value = existing[relation.name] as
+        | { _id?: unknown }
+        | { _id?: unknown }[]
+        | undefined;
+      const ids = (relation.multiple
+        ? (Array.isArray(value) ? value : value ? [value] : [])
+        : value && !Array.isArray(value)
+        ? [value]
+        : [])
+        .map((item) =>
+          item?._id
+        )
+        .filter(Boolean);
+      const expected = relation.optional === false ? 1 : 0;
+
+      if (ids.length < expected) {
+        return throwError(
+          `VALIDATION_FAILED: ${relation.field} is required for a new version`,
+        );
+      }
+
+      if (ids.length) {
+        relations[relation.name] = {
+          _ids: relation.multiple
+            ? ids.map((id) => new ObjectId(String(id)))
+            : new ObjectId(String(ids[0])),
+        };
+      }
+    }
+
+    const created = await config.model.insertOne({
+      doc,
+      projection: get,
+      ...(Object.keys(relations).length ? { relations } : {}),
+    });
+
+    if (!created) {
+      return throwError("VALIDATION_FAILED: New version could not be created");
+    }
+
+    await audit(config, "newVersion", String(created._id));
+    return created;
+  };
+
+  coreApp.acts.setAct({
+    schema: config.schema,
+    actName: "newVersion",
+    fn: newVersionFn,
+    preAct: [
+      setTokens,
+      setUser,
+      grantAccess(
+        roleChecks(config.writeRoles ?? ["Manager", "Admin", "ContentEditor"]),
       ),
     ],
     validator: object({
@@ -584,4 +711,5 @@ export const registerCrud = (config: CrudConfig) => {
   registerRemove(config);
   registerCount(config);
   registerPublish(config);
+  registerNewVersion(config);
 };

@@ -27,11 +27,17 @@ export const localAdapter: StorageAdapter = {
 
   async requestUpload(file, ttlSeconds) {
     await ensureDir();
-    const token = await createMediaToken(String(file._id), "upload", ttlSeconds);
+    const token = await createMediaToken(
+      String(file._id),
+      "upload",
+      ttlSeconds,
+    );
     return {
       uploadUrl: `${mediaBaseUrl}/upload/${file._id}?token=${token}`,
       method: "PUT",
-      headers: { "content-type": String(file.mimeType ?? "application/octet-stream") },
+      headers: {
+        "content-type": String(file.mimeType ?? "application/octet-stream"),
+      },
       expiresIn: ttlSeconds,
     };
   },

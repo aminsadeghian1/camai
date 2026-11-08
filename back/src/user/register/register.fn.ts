@@ -1,7 +1,7 @@
 import type { ActFn } from "lesan";
 import { hash } from "@da/bcrypt";
 import { user } from "../../../mod.ts";
-import { throwError } from "@lib";
+import { sanitizeUserProjection, sanitizeUserResponse, throwError } from "@lib";
 
 export const registerFn: ActFn = async (body) => {
   const {
@@ -31,10 +31,14 @@ export const registerFn: ActFn = async (body) => {
         notifications: { push: true, email: true },
         privacy: { aiProcessingConsent: false, analyticsConsent: true },
       },
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
-    projection: get,
+    projection: sanitizeUserProjection(get),
   });
 
-  return registeredUser ??
-    throwError("VALIDATION_FAILED: User could not be created");
+  return sanitizeUserResponse(
+    registeredUser ??
+      throwError("VALIDATION_FAILED: User could not be created"),
+  );
 };
