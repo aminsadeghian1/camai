@@ -3,7 +3,8 @@ import * as jwt from "djwt";
 import { MongoClient, ObjectId } from "lesan";
 
 const MONGO_URI = "mongodb://127.0.0.1:27017/";
-const TOKEN_KEY = "camai-sensitive-field-test-key";
+const TOKEN_KEY = "camai-sensitive-field-test-token-key-32-bytes";
+const MEDIA_SECRET = "camai-sensitive-field-test-secret-32-bytes-minimum";
 const TOKEN_TTL_SECONDS = 900;
 const SENSITIVE_FIELDS = [
   "password",
@@ -215,6 +216,7 @@ Deno.test({
         ENV: "test",
         APP_PORT: String(port),
         TOKEN_KEY,
+        MEDIA_SECRET,
         ACCESS_TOKEN_TTL_SECONDS: String(TOKEN_TTL_SECONDS),
         REFRESH_TOKEN_TTL_DAYS: "1",
         STORAGE_DRIVER: "s3",

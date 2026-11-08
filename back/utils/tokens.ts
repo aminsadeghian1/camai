@@ -2,8 +2,15 @@ import * as jwt from "djwt";
 import { compare, hash } from "@da/bcrypt";
 import type { Document } from "lesan";
 
-const secretKey = Deno.env.get("TOKEN_KEY") || "camai-dev-token-key";
+const secretKey = Deno.env.get("TOKEN_KEY");
 const encoder = new TextEncoder();
+
+if (!secretKey || encoder.encode(secretKey).length < 32) {
+  throw new Error(
+    "TOKEN_KEY must be set and contain at least 32 bytes.",
+  );
+}
+
 const keyBuf = encoder.encode(secretKey);
 
 export const jwtTokenKey = await crypto.subtle.importKey(

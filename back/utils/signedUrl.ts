@@ -1,8 +1,12 @@
 const encoder = new TextEncoder();
 
-const mediaSecret = Deno.env.get("MEDIA_SECRET") ||
-  Deno.env.get("TOKEN_KEY") ||
-  "camai-dev-media-secret";
+const mediaSecret = Deno.env.get("MEDIA_SECRET");
+
+if (!mediaSecret || encoder.encode(mediaSecret).length < 32) {
+  throw new Error(
+    "MEDIA_SECRET must be set and contain at least 32 bytes.",
+  );
+}
 
 const key = await crypto.subtle.importKey(
   "raw",
