@@ -12,7 +12,6 @@ node_modules/
 .next/
 
 # Deno
-deno.lock
 
 # Backend generated and local data
 back/uploads/*
@@ -34,3 +33,6 @@ ignore-scripts/*
 
 # Docker
 .docker/
+
+# Superpowers scratch
+.superpowers/

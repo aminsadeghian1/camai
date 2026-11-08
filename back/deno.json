@@ -3,23 +3,37 @@
   "version": "0.1.0",
   "exports": "./mod.ts",
   "tasks": {
-    "dev": "deno run --allow-all --watch mod.ts",
-    "start": "deno run --allow-all mod.ts",
+    "dev": "deno run --allow-all --env-file=../.env.backend --watch mod.ts",
+    "start": "deno run --allow-all --env-file=../.env.backend mod.ts",
     "check": "deno check mod.ts",
     "test": "deno test --allow-all",
     "fmt": "deno fmt",
     "lint": "deno lint"
   },
   "fmt": {
-    "include": ["src/", "models/", "utils/", "jobs/", "mod.ts"],
+    "include": [
+      "src/",
+      "models/",
+      "utils/",
+      "jobs/",
+      "mod.ts"
+    ],
     "semiColons": true,
     "singleQuote": false,
     "indentWidth": 2
   },
   "lint": {
-    "include": ["src/", "models/", "utils/", "jobs/", "mod.ts"],
+    "include": [
+      "src/",
+      "models/",
+      "utils/",
+      "jobs/",
+      "mod.ts"
+    ],
     "rules": {
-      "tags": ["recommended"]
+      "tags": [
+        "recommended"
+      ]
     }
   },
   "imports": {
@@ -27,10 +41,14 @@
     "lesan": "jsr:@hemedani/lesan@^0.2.3",
     "@std/assert": "jsr:@std/assert@^1.0.0",
     "djwt": "https://deno.land/x/djwt@v2.8/mod.ts",
+    "aws4fetch": "npm:aws4fetch@^1.0.20",
     "@lib": "./utils/mod.ts",
     "@model": "./models/mod.ts"
   },
   "compilerOptions": {
     "strict": true
-  }
+  },
+  "unstable": [
+    "cron"
+  ]
 }
