@@ -20,6 +20,7 @@ COPY models/ ./models/
 COPY src/ ./src/
 COPY utils/ ./utils/
 COPY jobs/ ./jobs/
+COPY http/ ./http/
 
 RUN mkdir -p uploads
 
